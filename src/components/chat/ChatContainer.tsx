@@ -148,7 +148,7 @@ export function ChatContainer() {
   };
 
     return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-black">
       {/* Sidebar - Always visible on desktop */}
       <div className="hidden lg:block">
         <ChatSidebar
@@ -172,17 +172,32 @@ export function ChatContainer() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-black">
         {/* Header */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="px-4 sm:container flex h-14 items-center">
-            <h1 className="text-lg font-semibold">🤖 AI CTO Agent</h1>
-            <span className="ml-2 text-xs text-muted-foreground">Your Strategic Technical Advisor</span>
+        <div className="border-b border-[#6c47ff]/20 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+          <div className="px-4 sm:container flex h-16 items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-[#6c47ff] to-[#a78bfa] rounded-lg flex items-center justify-center">
+                <span className="text-white text-lg">🤖</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white font-kode-mono tracking-wider">AI CTO AGENT</h1>
+                <span className="text-xs text-[#6c47ff] font-kode-mono">YOUR STRATEGIC TECHNICAL ADVISOR</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a
+                href="/agents"
+                className="text-[#6c47ff] hover:text-[#6c47ff]/80 font-kode-mono text-sm transition-colors"
+              >
+                View Agents →
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 bg-black">
           <AnimatePresence>
             {messages.map((message, index) => (
               <motion.div
@@ -204,13 +219,13 @@ export function ChatContainer() {
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-start"
             >
-              <div className="flex items-center space-x-2 bg-muted/50 rounded-2xl px-3 py-2 sm:px-4 sm:py-3 max-w-xs">
+              <div className="flex items-center space-x-2 bg-black/50 border border-[#6c47ff]/30 rounded-2xl px-4 py-3 max-w-xs backdrop-blur">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                  <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+                  <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                 </div>
-                <span className="text-xs sm:text-sm text-muted-foreground">CTO is strategizing...</span>
+                <span className="text-xs sm:text-sm text-[#6c47ff] font-kode-mono">CTO IS STRATEGIZING...</span>
               </div>
             </motion.div>
           )}
@@ -219,7 +234,7 @@ export function ChatContainer() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="border-t border-[#6c47ff]/20 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/60">
           <div className="px-2 sm:px-4 py-2 sm:py-4">
             <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
           </div>

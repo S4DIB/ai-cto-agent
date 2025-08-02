@@ -136,9 +136,9 @@ export default function Home() {
             duration={1200}
           />
           <nav style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>
-            <a href="#" className={navLinkStyle}>Home</a>
-            <a href="#features" className={navLinkStyle}>Features</a>
-            <a href="#pricing" className={navLinkStyle}>Pricing</a>
+            <a href="/" className={navLinkStyle}>Home</a>
+            <a href="/chat" className={navLinkStyle}>Chat</a>
+            <a href="/agents" className={navLinkStyle}>Agents</a>
             <a href="#contact" className={navLinkStyle}>Contact</a>
           </nav>
         </div>

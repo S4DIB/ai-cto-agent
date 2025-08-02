@@ -43,12 +43,12 @@ export function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
         {/* Attachment button */}
         <motion.button
           type="button"
-          className="flex-shrink-0 p-1.5 sm:p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+          className="flex-shrink-0 p-1.5 sm:p-2 rounded-full bg-black border border-[#6c47ff]/30 hover:bg-[#6c47ff]/10 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           disabled={disabled}
         >
-          <Paperclip className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+          <Paperclip className="w-3 h-3 sm:w-4 sm:h-4 text-[#6c47ff]" />
         </motion.button>
 
         {/* Message input */}
@@ -60,7 +60,7 @@ export function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             className={cn(
-              "w-full resize-none rounded-xl sm:rounded-2xl border bg-background px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+              "w-full resize-none rounded-xl sm:rounded-2xl border border-[#6c47ff]/30 bg-black/50 text-white placeholder:text-[#6c47ff]/60 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm font-kode-mono focus:outline-none focus:ring-2 focus:ring-[#6c47ff] focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur",
               "min-h-[40px] sm:min-h-[44px] max-h-24 sm:max-h-32"
             )}
             disabled={disabled}
@@ -77,8 +77,8 @@ export function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
           type="submit"
           disabled={!message.trim() || disabled}
           className={cn(
-            "flex-shrink-0 p-2 sm:p-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-            !message.trim() && "bg-muted text-muted-foreground"
+            "flex-shrink-0 p-2 sm:p-3 rounded-full bg-gradient-to-r from-[#6c47ff] to-[#a78bfa] text-white hover:from-[#7d5fff] hover:to-[#b794ff] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg",
+            !message.trim() && "bg-black border border-[#6c47ff]/30 text-[#6c47ff]"
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

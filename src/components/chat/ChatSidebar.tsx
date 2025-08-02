@@ -139,128 +139,128 @@ export function ChatSidebar({
         )}
       </AnimatePresence>
 
-             {/* Sidebar */}
+                    {/* Sidebar */}
        <motion.div
          initial={{ x: -300 }}
          animate={{ x: isOpen ? 0 : -300 }}
          transition={{ type: "spring", damping: 25, stiffness: 200 }}
          className={cn(
-           "fixed left-0 top-0 h-full w-80 bg-background border-r z-50 flex flex-col",
+           "fixed left-0 top-0 h-full w-80 bg-black border-r border-[#6c47ff]/20 z-50 flex flex-col",
            "lg:relative lg:translate-x-0 lg:block"
          )}
          style={{ display: isOpen ? 'flex' : 'none' }}
        >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Chat History</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleNewSession}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-              title="New Chat"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onToggle}
-              className="p-2 rounded-lg hover:bg-muted transition-colors lg:hidden"
-              title="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+         {/* Header */}
+         <div className="flex items-center justify-between p-4 border-b border-[#6c47ff]/20">
+           <h2 className="text-lg font-semibold text-white font-kode-mono tracking-wider">CHAT HISTORY</h2>
+           <div className="flex items-center gap-2">
+             <button
+               onClick={handleNewSession}
+               className="p-2 rounded-lg hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff]"
+               title="New Chat"
+             >
+               <Plus className="w-4 h-4" />
+             </button>
+             <button
+               onClick={onToggle}
+               className="p-2 rounded-lg hover:bg-[#6c47ff]/10 transition-colors lg:hidden text-[#6c47ff]"
+               title="Close"
+             >
+               <X className="w-4 h-4" />
+             </button>
+           </div>
+         </div>
 
-        {/* Actions */}
-        <div className="p-4 border-b">
-          <div className="flex gap-2">
-            <button
-              onClick={handleImportSession}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
-              title="Import Chat"
-            >
-              <Upload className="w-4 h-4" />
-              Import
-            </button>
-          </div>
-        </div>
+         {/* Actions */}
+         <div className="p-4 border-b border-[#6c47ff]/20">
+           <div className="flex gap-2">
+             <button
+               onClick={handleImportSession}
+               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff] font-kode-mono"
+               title="Import Chat"
+             >
+               <Upload className="w-4 h-4" />
+               Import
+             </button>
+           </div>
+         </div>
 
-        {/* Sessions List */}
-        <div className="flex-1 overflow-y-auto p-2">
-          <AnimatePresence>
-            {sessions.map((session) => (
-              <motion.div
-                key={session.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={cn(
-                  "group relative p-3 rounded-lg cursor-pointer transition-colors",
-                  currentSessionId === session.id
-                    ? "bg-primary/10 border border-primary/20"
-                    : "hover:bg-muted/50"
-                )}
-                onClick={() => onSessionSelect(session)}
-              >
-                <div className="flex items-start gap-3">
-                  <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm truncate">
-                      {session.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {formatDate(session.updatedAt)}
-                    </div>
-                  </div>
-                </div>
+                 {/* Sessions List */}
+         <div className="flex-1 overflow-y-auto p-2">
+           <AnimatePresence>
+             {sessions.map((session) => (
+               <motion.div
+                 key={session.id}
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 className={cn(
+                   "group relative p-3 rounded-lg cursor-pointer transition-colors",
+                   currentSessionId === session.id
+                     ? "bg-[#6c47ff]/10 border border-[#6c47ff]/30"
+                     : "hover:bg-[#6c47ff]/5"
+                 )}
+                 onClick={() => onSessionSelect(session)}
+               >
+                 <div className="flex items-start gap-3">
+                   <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#6c47ff]" />
+                   <div className="flex-1 min-w-0">
+                     <h3 className="font-medium text-sm truncate text-white font-kode-mono">
+                       {session.title}
+                     </h3>
+                     <div className="flex items-center gap-2 mt-1 text-xs text-[#6c47ff] font-kode-mono">
+                       <Clock className="w-3 h-3" />
+                       {formatDate(session.updatedAt)}
+                     </div>
+                   </div>
+                 </div>
 
-                {/* Actions */}
-                <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExportSession(session.id);
-                      }}
-                      className="p-1 rounded hover:bg-muted transition-colors"
-                      title="Export Chat"
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSession(session.id);
-                      }}
-                      className="p-1 rounded hover:bg-muted transition-colors text-destructive"
-                      title="Delete Chat"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                 {/* Actions */}
+                 <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <div className="flex gap-1">
+                     <button
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         handleExportSession(session.id);
+                       }}
+                       className="p-1 rounded hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff]"
+                       title="Export Chat"
+                     >
+                       <Download className="w-3 h-3" />
+                     </button>
+                     <button
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         handleDeleteSession(session.id);
+                       }}
+                       className="p-1 rounded hover:bg-red-500/10 transition-colors text-red-400"
+                       title="Delete Chat"
+                     >
+                       <Trash2 className="w-3 h-3" />
+                     </button>
+                   </div>
+                 </div>
+               </motion.div>
+             ))}
+           </AnimatePresence>
 
-          {sessions.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No chat history yet</p>
-              <p className="text-xs">Start a new conversation to see it here</p>
-            </div>
-          )}
-        </div>
+           {sessions.length === 0 && (
+             <div className="text-center py-8 text-[#6c47ff]">
+               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+               <p className="text-sm font-kode-mono">NO CHAT HISTORY YET</p>
+               <p className="text-xs font-kode-mono">START A NEW CONVERSATION TO SEE IT HERE</p>
+             </div>
+           )}
+         </div>
       </motion.div>
 
-      {/* Mobile toggle button */}
-      <button
-        onClick={onToggle}
-        className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-background border shadow-lg lg:hidden"
-      >
-        <Menu className="w-4 h-4" />
-      </button>
+             {/* Mobile toggle button */}
+       <button
+         onClick={onToggle}
+         className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-black border border-[#6c47ff]/30 shadow-lg lg:hidden text-[#6c47ff] hover:bg-[#6c47ff]/10 transition-colors"
+       >
+         <Menu className="w-4 h-4" />
+       </button>
     </>
   );
 } 
