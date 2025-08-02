@@ -31,7 +31,40 @@ export function ChatContainer() {
         setMessages([
           {
             id: "1",
-            content: "Hello! I'm your AI CTO. I want to understand your vision completely so I can give you the best technical strategy. Let's start with the most important question:\nWhat's your business idea? Describe it in simple terms - what are you building and why?",
+            content: `🤖 **Welcome! I'm your AI CTO** - Your strategic technical advisor for turning ideas into successful tech companies.
+
+## 🎯 **What I Can Do For You:**
+
+### 📋 **Technical Analysis & Code Review**
+- Analyze your GitHub repositories
+- Review code architecture and best practices
+- Identify scalability and security improvements
+- Provide specific technical recommendations
+
+### 🔍 **Market Research Insights**
+- Analyze market size and competition
+- Research target audience and trends
+- Evaluate growth potential and opportunities
+- Assess competitive landscape
+
+### 🛠️ **Tech Stack Recommendations**
+- Recommend optimal technology choices
+- Consider scalability, cost, and team expertise
+- Suggest modern, proven technologies
+- Provide implementation guidance
+
+### 🚀 **Implementation Strategy**
+- Create actionable roadmaps with timelines
+- Define milestones and resource requirements
+- Provide budget breakdowns
+- Guide team strategy and hiring
+
+## 💡 **How to Get Started:**
+Simply describe your idea and include your GitHub repository URL for comprehensive analysis. I'll provide structured, actionable insights to help you make informed technical decisions.
+
+**Example:** *"I'm building a SaaS platform for project management. Here's my GitHub repo: https://github.com/username/project-name"*
+
+What's your business idea and do you have a GitHub repository to analyze?`,
             sender: "agent",
             timestamp: new Date(),
           },
