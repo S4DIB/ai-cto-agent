@@ -133,7 +133,7 @@ export function ChatSidebar({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
             onClick={onToggle}
           />
         )}
@@ -144,26 +144,26 @@ export function ChatSidebar({
          initial={{ x: -300 }}
          animate={{ x: isOpen ? 0 : -300 }}
          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-         className={cn(
-           "fixed left-0 top-0 h-full w-80 bg-black border-r border-[#6c47ff]/20 z-50 flex flex-col",
+          className={cn(
+           "fixed left-0 top-0 h-full w-80 bg-neutral-950 border-r border-neutral-800 z-50 flex flex-col",
            "lg:relative lg:translate-x-0 lg:block"
          )}
          style={{ display: isOpen ? 'flex' : 'none' }}
        >
          {/* Header */}
-         <div className="flex items-center justify-between p-4 border-b border-[#6c47ff]/20">
-           <h2 className="text-lg font-semibold text-white font-kode-mono tracking-wider">CHAT HISTORY</h2>
+          <div className="flex items-center justify-between p-4 border-b border-neutral-800">
+           <h2 className="text-lg font-semibold text-slate-100 font-kode-mono tracking-wider">CHAT HISTORY</h2>
            <div className="flex items-center gap-2">
              <button
                onClick={handleNewSession}
-               className="p-2 rounded-lg hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff]"
+               className="p-2 rounded-lg hover:bg-neutral-800 transition-colors text-indigo-400"
                title="New Chat"
              >
                <Plus className="w-4 h-4" />
              </button>
              <button
                onClick={onToggle}
-               className="p-2 rounded-lg hover:bg-[#6c47ff]/10 transition-colors lg:hidden text-[#6c47ff]"
+               className="p-2 rounded-lg hover:bg-neutral-800 transition-colors lg:hidden text-indigo-400"
                title="Close"
              >
                <X className="w-4 h-4" />
@@ -172,11 +172,11 @@ export function ChatSidebar({
          </div>
 
          {/* Actions */}
-         <div className="p-4 border-b border-[#6c47ff]/20">
+          <div className="p-4 border-b border-neutral-800">
            <div className="flex gap-2">
              <button
                onClick={handleImportSession}
-               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff] font-kode-mono"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-neutral-800 transition-colors text-indigo-400 font-kode-mono"
                title="Import Chat"
              >
                <Upload className="w-4 h-4" />
@@ -196,19 +196,19 @@ export function ChatSidebar({
                  exit={{ opacity: 0, y: -10 }}
                  className={cn(
                    "group relative p-3 rounded-lg cursor-pointer transition-colors",
-                   currentSessionId === session.id
-                     ? "bg-[#6c47ff]/10 border border-[#6c47ff]/30"
-                     : "hover:bg-[#6c47ff]/5"
+                    currentSessionId === session.id
+                      ? "bg-neutral-900 border border-neutral-800"
+                      : "hover:bg-neutral-900"
                  )}
                  onClick={() => onSessionSelect(session)}
                >
                  <div className="flex items-start gap-3">
-                   <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#6c47ff]" />
+                    <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0 text-indigo-400" />
                    <div className="flex-1 min-w-0">
-                     <h3 className="font-medium text-sm truncate text-white font-kode-mono">
+                      <h3 className="font-medium text-sm truncate text-slate-100 font-kode-mono">
                        {session.title}
                      </h3>
-                     <div className="flex items-center gap-2 mt-1 text-xs text-[#6c47ff] font-kode-mono">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 font-kode-mono">
                        <Clock className="w-3 h-3" />
                        {formatDate(session.updatedAt)}
                      </div>
@@ -223,7 +223,7 @@ export function ChatSidebar({
                          e.stopPropagation();
                          handleExportSession(session.id);
                        }}
-                       className="p-1 rounded hover:bg-[#6c47ff]/10 transition-colors text-[#6c47ff]"
+                        className="p-1 rounded hover:bg-neutral-800 transition-colors text-indigo-400"
                        title="Export Chat"
                      >
                        <Download className="w-3 h-3" />
@@ -233,7 +233,7 @@ export function ChatSidebar({
                          e.stopPropagation();
                          handleDeleteSession(session.id);
                        }}
-                       className="p-1 rounded hover:bg-red-500/10 transition-colors text-red-400"
+                        className="p-1 rounded hover:bg-red-900/30 transition-colors text-red-400"
                        title="Delete Chat"
                      >
                        <Trash2 className="w-3 h-3" />
@@ -244,8 +244,8 @@ export function ChatSidebar({
              ))}
            </AnimatePresence>
 
-           {sessions.length === 0 && (
-             <div className="text-center py-8 text-[#6c47ff]">
+            {sessions.length === 0 && (
+             <div className="text-center py-8 text-slate-400">
                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
                <p className="text-sm font-kode-mono">NO CHAT HISTORY YET</p>
                <p className="text-xs font-kode-mono">START A NEW CONVERSATION TO SEE IT HERE</p>
@@ -255,9 +255,9 @@ export function ChatSidebar({
       </motion.div>
 
              {/* Mobile toggle button */}
-       <button
+        <button
          onClick={onToggle}
-         className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-black border border-[#6c47ff]/30 shadow-lg lg:hidden text-[#6c47ff] hover:bg-[#6c47ff]/10 transition-colors"
+          className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-neutral-900 border border-neutral-800 shadow-lg lg:hidden text-indigo-400 hover:bg-neutral-800 transition-colors"
        >
          <Menu className="w-4 h-4" />
        </button>

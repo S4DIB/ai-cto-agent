@@ -10,6 +10,7 @@ import { demoAgents } from "@/lib/demoData";
 export function AgentContainer() {
   const [currentSession, setCurrentSession] = useState<AgentSession | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
 
   // Initialize with existing sessions or create a new one
   useEffect(() => {
@@ -23,7 +24,7 @@ export function AgentContainer() {
       } else {
         // Create a new session with demo data
         const newSession = agentStorage.createSession({
-          title: "Demo Project - E-commerce Platform",
+          title: "E-commerce Platform",
           description: "A modern e-commerce platform with React, Next.js, and Stripe integration",
           agents: demoAgents,
         });
@@ -31,6 +32,7 @@ export function AgentContainer() {
       }
     }
   }, [currentSession]);
+  // No simulation; display static demo data
 
   const handleSessionSelect = (session: AgentSession) => {
     setCurrentSession(session);

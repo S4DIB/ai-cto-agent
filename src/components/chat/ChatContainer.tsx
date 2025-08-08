@@ -31,40 +31,8 @@ export function ChatContainer() {
         setMessages([
           {
             id: "1",
-            content: `🤖 **Welcome! I'm your AI CTO** - Your strategic technical advisor for turning ideas into successful tech companies.
-
-## 🎯 **What I Can Do For You:**
-
-### 📋 **Technical Analysis & Code Review**
-- Analyze your GitHub repositories
-- Review code architecture and best practices
-- Identify scalability and security improvements
-- Provide specific technical recommendations
-
-### 🔍 **Market Research Insights**
-- Analyze market size and competition
-- Research target audience and trends
-- Evaluate growth potential and opportunities
-- Assess competitive landscape
-
-### 🛠️ **Tech Stack Recommendations**
-- Recommend optimal technology choices
-- Consider scalability, cost, and team expertise
-- Suggest modern, proven technologies
-- Provide implementation guidance
-
-### 🚀 **Implementation Strategy**
-- Create actionable roadmaps with timelines
-- Define milestones and resource requirements
-- Provide budget breakdowns
-- Guide team strategy and hiring
-
-## 💡 **How to Get Started:**
-Simply describe your idea and include your GitHub repository URL for comprehensive analysis. I'll provide structured, actionable insights to help you make informed technical decisions.
-
-**Example:** *"I'm building a SaaS platform for project management. Here's my GitHub repo: https://github.com/username/project-name"*
-
-What's your business idea and do you have a GitHub repository to analyze?`,
+            content:
+              "Hey! I’m your AI CTO—here to help you turn ideas into real, scalable products. We’ll keep things simple, practical, and focused on what actually moves you forward. Quick first step: do you already have a startup idea, or would you like help brainstorming one?",
             sender: "agent",
             timestamp: new Date(),
           },
@@ -124,18 +92,32 @@ What's your business idea and do you have a GitHub repository to analyze?`,
         throw new Error(data.error || 'Failed to get response from AI');
       }
 
-      const agentMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.response,
-        sender: "agent",
-        timestamp: new Date(),
-      };
+      // Typewriter effect for agent response
+      const fullText: string = data.response || "";
+      const typingMessageId = (Date.now() + 1).toString();
+      const base = [...updatedMessages];
+      // Seed empty agent message
+      setMessages([...base, { id: typingMessageId, content: "", sender: "agent" as const, timestamp: new Date() }]);
 
-      const finalMessages = [...updatedMessages, agentMessage];
-      setMessages(finalMessages);
-      
-      // Save to storage
-      chatStorage.updateSession(currentSession.id, finalMessages);
+      let index = 0;
+      const total = fullText.length;
+      const step = Math.max(1, Math.floor(total / 400)); // adaptive speed
+      const typeNext = () => {
+        index = Math.min(total, index + step);
+        const typed = fullText.slice(0, index);
+        setMessages([...base, { id: typingMessageId, content: typed, sender: "agent" as const, timestamp: new Date() }]);
+        if (index < total) {
+          setTimeout(typeNext, 10);
+        } else {
+          // Persist final typed message
+          const finalMessages: Message[] = [...base, { id: typingMessageId, content: fullText, sender: "agent" as const, timestamp: new Date() } as Message];
+          chatStorage.updateSession(currentSession.id, finalMessages);
+        }
+      };
+      // Stop loader and start typing
+      setIsLoading(false);
+      typeNext();
+      return;
     } catch (error) {
       console.error('Chat API error:', error);
       
@@ -151,7 +133,7 @@ What's your business idea and do you have a GitHub repository to analyze?`,
       setMessages(finalMessages);
       chatStorage.updateSession(currentSession.id, finalMessages);
     } finally {
-      setIsLoading(false);
+      // setIsLoading handled above when starting typewriter
     }
   };
 
@@ -167,7 +149,8 @@ What's your business idea and do you have a GitHub repository to analyze?`,
     setMessages([
       {
         id: "1",
-        content: "Hello! I'm your AI CTO. I want to understand your vision completely so I can give you the best technical strategy. Let's start with the most important question:\nWhat's your business idea? Describe it in simple terms - what are you building and why?",
+        content:
+          "Hey! I’m your AI CTO—here to help you turn ideas into real, scalable products. We’ll keep things simple, practical, and focused on what actually moves you forward.\n\nQuick first step: do you already have a startup idea, or would you like help brainstorming one?",
         sender: "agent",
         timestamp: new Date(),
       },
@@ -181,7 +164,7 @@ What's your business idea and do you have a GitHub repository to analyze?`,
   };
 
     return (
-    <div className="flex h-full bg-black">
+    <div className="flex h-full bg-neutral-950">
       {/* Sidebar - Always visible on desktop */}
       <div className="hidden lg:block">
         <ChatSidebar
@@ -205,17 +188,16 @@ What's your business idea and do you have a GitHub repository to analyze?`,
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-black">
+      <div className="flex-1 flex flex-col bg-neutral-950">
         {/* Header */}
-        <div className="border-b border-[#6c47ff]/20 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+        <div className="border-b border-neutral-800 bg-neutral-900/90 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/70">
           <div className="px-4 sm:container flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-[#6c47ff] to-[#a78bfa] rounded-lg flex items-center justify-center">
-                <span className="text-white text-lg">🤖</span>
-              </div>
+              {/* Removed icon per request */}
+              <div className="w-8 h-8" />
               <div>
                 <h1 className="text-xl font-bold text-white font-kode-mono tracking-wider">AI CTO AGENT</h1>
-                <span className="text-xs text-[#6c47ff] font-kode-mono">YOUR STRATEGIC TECHNICAL ADVISOR</span>
+                <span className="text-xs text-slate-400 font-kode-mono">YOUR STRATEGIC TECHNICAL ADVISOR</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -230,7 +212,7 @@ What's your business idea and do you have a GitHub repository to analyze?`,
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 bg-black">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 bg-neutral-950">
           <AnimatePresence>
             {messages.map((message, index) => (
               <motion.div
@@ -252,13 +234,13 @@ What's your business idea and do you have a GitHub repository to analyze?`,
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-start"
             >
-              <div className="flex items-center space-x-2 bg-black/50 border border-[#6c47ff]/30 rounded-2xl px-4 py-3 max-w-xs backdrop-blur">
+              <div className="flex items-center space-x-2 bg-neutral-900 border border-neutral-800 rounded-2xl px-4 py-3 max-w-xs backdrop-blur">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" />
                   <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
                   <div className="w-2 h-2 bg-[#6c47ff] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                 </div>
-                <span className="text-xs sm:text-sm text-[#6c47ff] font-kode-mono">CTO IS STRATEGIZING...</span>
+                <span className="text-xs sm:text-sm text-slate-300 font-kode-mono">CTO is thinking…</span>
               </div>
             </motion.div>
           )}
@@ -267,7 +249,7 @@ What's your business idea and do you have a GitHub repository to analyze?`,
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-[#6c47ff]/20 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+        <div className="border-t border-neutral-800 bg-neutral-900/90 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/70">
           <div className="px-2 sm:px-4 py-2 sm:py-4">
             <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
           </div>
