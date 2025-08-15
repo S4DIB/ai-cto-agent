@@ -21,17 +21,10 @@ class ProjectService:
             updated_at=datetime.now()
         )
         
+        # The orchestrator now handles the entire planning phase
+        project = await self.orchestrator.plan_project(project)
+        
         self.projects[project_id] = project
-        
-        cto_agent = await self.orchestrator.create_cto_agent(project_id)
-        
-        required_roles = await self.orchestrator.analyze_project_requirements(project)
-        specialist_agents = await self.orchestrator.create_specialist_agents(
-            project_id=project_id,
-            cto_agent_id=cto_agent.id,
-            roles=required_roles
-        )
-        
         project.status = ProjectStatus.IN_PROGRESS
         project.updated_at = datetime.now()
         

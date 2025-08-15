@@ -2,6 +2,7 @@ from enum import Enum
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 from datetime import datetime
+from collections import deque
 
 class AgentRole(str, Enum):
     CTO = "cto"
@@ -37,6 +38,10 @@ class Agent(BaseModel):
     updated_at: datetime
     parent_agent_id: Optional[str] = None
     deliverables: List[str] = []
+    message_queue: deque = deque()
+
+    def receive_message(self, message: Dict):
+        self.message_queue.append(message)
 
 class AgentCreate(BaseModel):
     role: AgentRole

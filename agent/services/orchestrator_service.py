@@ -1,36 +1,69 @@
 from typing import List, Optional, Dict
 import uuid
+import json
 from datetime import datetime
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
 
 from ..models.agent import Agent, AgentCreate, AgentRole, AgentStatus, AgentConfig
-from ..models.project import Project, TechStack
+from ..models.project import Project
+from ..models.task import Task, TaskStatus
 from ..core.config import settings
 
 class OrchestratorService:
     def __init__(self):
         self.llm = ChatOpenAI(temperature=0.7)
         self.agents: Dict[str, Agent] = {}
+        self.tasks: Dict[str, Task] = {}
+        self._load_agent_config()
         
         # Prompt for analyzing project requirements
         self.analysis_prompt = ChatPromptTemplate.from_template("""
-            As a CTO, analyze the following project requirements and determine which specialist agents are needed:
+            As a CTO, analyze the following project requirements and determine which specialist agents are needed from the available roles: {available_roles}
             
             Project Description: {description}
             Requirements: {requirements}
             
-            For each required role, provide:
-            1. Role type (frontend, backend, devops, etc.)
-            2. Justification for why this role is needed
-            3. Primary responsibilities
-            4. Required technical skills
+            Format your response as a JSON object with a single key "roles" containing a list of role strings.
+        """)
+        
+        self.task_decomposition_prompt = ChatPromptTemplate.from_template("""
+            As a CTO, break down the following project into a series of tasks.
             
-            Format your response in a clear, structured way.
+            Project Description: {description}
+            Requirements: {requirements}
+            
+            For each task, provide:
+            1. A unique ID (e.g., "task_1", "task_2")
+            2. A title
+            3. A description
+            4. A list of dependencies (other task IDs that must be completed first)
+            
+            Format your response as a JSON object with a single key "tasks" containing a list of task objects.
         """)
         
         self.analysis_chain = LLMChain(llm=self.llm, prompt=self.analysis_prompt)
+        self.task_decomposition_chain = LLMChain(llm=self.llm, prompt=self.task_decomposition_prompt)
+
+    def _load_agent_config(self):
+        with open("agent/agent_config.json", "r") as f:
+            self.agent_config = json.load(f)
+
+    async def plan_project(self, project: Project) -> Project:
+        """Analyzes requirements, decomposes into tasks, and assigns agents."""
+        # 1. Analyze requirements to determine needed roles
+        required_roles = await self.analyze_project_requirements(project)
+        
+        # 2. Decompose project into tasks
+        tasks = await self.decompose_project_into_tasks(project)
+        project.tasks = tasks
+        
+        # 3. Create specialist agents
+        cto_agent = await self.create_cto_agent(project.id)
+        await self.create_specialist_agents(project.id, cto_agent.id, required_roles)
+        
+        return project
 
     async def create_cto_agent(self, project_id: str) -> Agent:
         """Create the main CTO agent that will orchestrate other agents"""
@@ -51,36 +84,75 @@ class OrchestratorService:
 
     async def analyze_project_requirements(self, project: Project) -> List[AgentRole]:
         """Analyze project requirements and determine needed specialist agents"""
+        available_roles = ", ".join(self.agent_config["roles"].keys())
         analysis = await self.analysis_chain.arun(
+            description=project.description,
+            requirements="\n".join(project.requirements),
+            available_roles=available_roles
+        )
+        
+        required_roles = self._parse_required_roles(analysis)
+        return required_roles
+
+    async def decompose_project_into_tasks(self, project: Project) -> List[Task]:
+        """Break down the project into a series of tasks with dependencies."""
+        task_analysis = await self.task_decomposition_chain.arun(
             description=project.description,
             requirements="\n".join(project.requirements)
         )
         
-        # Parse the LLM response to determine required roles
-        # This is a placeholder - implement proper parsing based on LLM output format
-        required_roles = self._parse_required_roles(analysis)
-        return required_roles
+        tasks = self._parse_tasks(project.id, task_analysis)
+        for task in tasks:
+            self.tasks[task.id] = task
+        return tasks
+
+    def _parse_tasks(self, project_id: str, task_analysis: str) -> List[Task]:
+        """Parse the LLM output to create Task objects."""
+        try:
+            task_data = json.loads(task_analysis)
+            tasks = []
+            for task_item in task_data.get("tasks", []):
+                task = Task(
+                    id=task_item["id"],
+                    project_id=project_id,
+                    title=task_item["title"],
+                    description=task_item["description"],
+                    status=TaskStatus.PENDING,
+                    dependencies=task_item.get("dependencies", []),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now()
+                )
+                tasks.append(task)
+            return tasks
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    async def send_message(self, sender_id: str, recipient_id: str, message_content: Dict) -> bool:
+        """Send a message from one agent to another."""
+        if recipient_id not in self.agents:
+            return False
+        
+        recipient = self.agents[recipient_id]
+        message = {
+            "sender_id": sender_id,
+            "content": message_content,
+            "timestamp": datetime.now().isoformat()
+        }
+        recipient.receive_message(message)
+        return True
 
     async def create_specialist_agents(self, project_id: str, cto_agent_id: str, roles: List[AgentRole]) -> List[Agent]:
         """Create specialist agents based on the analysis"""
         agents = []
-        role_prompts = {
-            AgentRole.FRONTEND: """You are an expert frontend engineer responsible for:
-                1. Designing and implementing user interfaces
-                2. Ensuring responsive and accessible design
-                3. Implementing client-side functionality
-                4. Writing clean, maintainable frontend code""",
-            AgentRole.BACKEND: """You are an expert backend engineer responsible for:
-                1. Designing and implementing APIs
-                2. Managing database schemas and operations
-                3. Implementing business logic
-                4. Ensuring security and performance""",
-            # Add more role-specific prompts as needed
-        }
-        
         for role in roles:
+            role_str = role.value
+            if role_str in self.agent_config["roles"]:
+                system_prompt = self.agent_config["roles"][role_str]["system_prompt"]
+            else:
+                system_prompt = "You are a specialist engineer."
+
             config = AgentConfig(
-                system_prompt=role_prompts.get(role, "You are a specialist engineer."),
+                system_prompt=system_prompt,
             )
             
             agent = await self.create_agent(AgentCreate(
@@ -141,15 +213,18 @@ class OrchestratorService:
 
     def _parse_required_roles(self, analysis: str) -> List[AgentRole]:
         """Parse the LLM analysis to determine required roles"""
-        # Implement proper parsing logic based on the LLM output format
-        # This is a placeholder implementation
-        roles = []
-        if "frontend" in analysis.lower():
-            roles.append(AgentRole.FRONTEND)
-        if "backend" in analysis.lower():
-            roles.append(AgentRole.BACKEND)
-        if "devops" in analysis.lower():
-            roles.append(AgentRole.DEVOPS)
-        if "database" in analysis.lower():
-            roles.append(AgentRole.DATABASE)
-        return roles
+        try:
+            # The prompt now asks for a JSON object, so we parse it directly
+            analysis_json = json.loads(analysis)
+            roles_str = analysis_json.get("roles", [])
+            
+            # Convert role strings to AgentRole enums
+            roles = [AgentRole(role) for role in roles_str if role in AgentRole.__members__]
+            return roles
+        except (json.JSONDecodeError, TypeError):
+            # Fallback for unstructured text
+            roles = []
+            for role_enum in AgentRole:
+                if role_enum.value in analysis.lower():
+                    roles.append(role_enum)
+            return list(set(roles)) # Return unique roles
