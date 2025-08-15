@@ -2,7 +2,7 @@ from typing import List, Optional, Dict
 import uuid
 import json
 from datetime import datetime
-from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
 
@@ -13,7 +13,7 @@ from ..core.config import settings
 
 class OrchestratorService:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=0.7)
+        self.llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.7, google_api_key=settings.gemini_api_key)
         self.agents: Dict[str, Agent] = {}
         self.tasks: Dict[str, Task] = {}
         self._load_agent_config()
