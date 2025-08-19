@@ -23,7 +23,7 @@ class AgentStatus(str, Enum):
 class AgentConfig(BaseModel):
     model: str = "gpt-4"
     temperature: float = 0.7
-    max_tokens: int = 2000
+    max_tokens: int = 8192  # Increased for proper code generation
     system_prompt: str
 
 class Agent(BaseModel):
@@ -39,6 +39,7 @@ class Agent(BaseModel):
     parent_agent_id: Optional[str] = None
     deliverables: List[str] = []
     message_queue: deque = deque()
+    generated_code: Optional[Dict] = None  # Store generated code
 
     def receive_message(self, message: Dict):
         self.message_queue.append(message)

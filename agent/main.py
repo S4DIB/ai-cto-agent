@@ -5,12 +5,13 @@ from typing import List, Optional, Dict
 import uuid
 from datetime import datetime
 
-from .api.routers import projects, agents, deliverables
-from .services.orchestrator_service import OrchestratorService
-from .services.project_service import ProjectService
-from .models.project import Project, ProjectCreate
-from .models.agent import Agent, AgentRole, AgentStatus
-from .models.deliverable import Deliverable, DeliverableType, CodeFile
+# Fix relative imports to absolute imports
+from api.routers import projects, agents, deliverables
+from services.orchestrator_service import OrchestratorService
+from services.project_service import ProjectService
+from models.project import Project, ProjectCreate
+from models.agent import Agent, AgentRole, AgentStatus
+from models.deliverable import Deliverable, DeliverableType, CodeFile
 
 app = FastAPI(
     title="AI CTO Agent",
@@ -83,14 +84,14 @@ async def get_project_code(project_id: str):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    code_deliverables = [d for d in project_service.get_project_deliverables(project_id)
-                        if d.type == DeliverableType.CODE]
+    code_deliverables = await project_service.get_project_deliverables(project_id)
+    code_files = []
     
-    all_files = []
     for deliverable in code_deliverables:
-        all_files.extend(deliverable.files)
+        if deliverable.type == DeliverableType.CODE:
+            code_files.extend(deliverable.files)
     
-    return all_files
+    return code_files
 
 @app.get("/projects/{project_id}/documentation")
 async def get_project_documentation(project_id: str):
@@ -99,10 +100,10 @@ async def get_project_documentation(project_id: str):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    docs = [d for d in project_service.get_project_deliverables(project_id)
-            if d.type == DeliverableType.DOCUMENTATION]
+    docs = await project_service.get_project_deliverables(project_id)
+    documentation = [d for d in docs if d.type == DeliverableType.DOCUMENTATION]
     
-    return {"documentation": [doc.content for doc in docs]}
+    return {"documentation": [doc.content for doc in documentation]}
 
 @app.get("/projects/{project_id}/architecture")
 async def get_project_architecture(project_id: str):
@@ -111,8 +112,8 @@ async def get_project_architecture(project_id: str):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    architecture_docs = [d for d in project_service.get_project_deliverables(project_id)
-                        if d.type == DeliverableType.ARCHITECTURE]
+    deliverables = await project_service.get_project_deliverables(project_id)
+    architecture_docs = [d for d in deliverables if d.type == DeliverableType.ARCHITECTURE]
     
     return {"architecture": [doc.content for doc in architecture_docs]}
 

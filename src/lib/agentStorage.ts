@@ -144,6 +144,15 @@ class AgentStorage {
     }
   }
 
+  clearAll(): void {
+    this.saveSessions([]);
+
+    // Dispatch event for real-time updates
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('agent-storage-update'));
+    }
+  }
+
   private saveSessions(sessions: AgentSession[]): void {
     if (typeof window === 'undefined') return;
     

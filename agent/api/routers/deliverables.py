@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 import uuid
 
-from ..models.deliverable import (
+from models.deliverable import (
     Deliverable,
     DeliverableCreate,
     DeliverableType,

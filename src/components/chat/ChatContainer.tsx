@@ -49,11 +49,15 @@ export function ChatContainer() {
     scrollToBottom();
   }, [messages]);
 
+  const generateUniqueId = () => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+
   const handleSendMessage = async (content: string) => {
     if (!content.trim() || !currentSession) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       content: content.trim(),
       sender: "user",
       timestamp: new Date(),
@@ -92,9 +96,15 @@ export function ChatContainer() {
         throw new Error(data.error || 'Failed to get response from AI');
       }
 
+      // Check if project creation is ready
+      if (data.isProjectReady && data.projectDetails) {
+        // Create project in backend
+        await createProject(data.projectDetails);
+      }
+
       // Typewriter effect for agent response
       const fullText: string = data.response || "";
-      const typingMessageId = (Date.now() + 1).toString();
+      const typingMessageId = generateUniqueId();
       const base = [...updatedMessages];
       // Seed empty agent message
       setMessages([...base, { id: typingMessageId, content: "", sender: "agent" as const, timestamp: new Date() }]);
@@ -134,6 +144,72 @@ export function ChatContainer() {
       chatStorage.updateSession(currentSession.id, finalMessages);
     } finally {
       // setIsLoading handled above when starting typewriter
+    }
+  };
+
+  const createProject = async (projectDetails: any) => {
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectDetails)
+      });
+
+      if (!response.ok) {
+        console.error('Failed to create project:', response.statusText);
+        return;
+      }
+
+      const project = await response.json();
+      console.log('Project created with ID:', project.id);
+      
+      // Trigger a refresh of the agents container to pick up the new project
+      window.dispatchEvent(new Event('project-created'));
+      
+      // Execute the project to assign agents and start code generation
+      try {
+        const executeResponse = await fetch(`/api/projects/${project.id}/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (executeResponse.ok) {
+          console.log('Project execution started successfully');
+        } else {
+          console.error('Failed to start project execution');
+        }
+      } catch (error) {
+        console.error('Error executing project:', error);
+      }
+      
+      // Show success message to user
+      const successMessage: Message = {
+        id: generateUniqueId(),
+        content: `🎉 Project "${project.name}" created successfully! 
+
+Your AI CTO has analyzed your startup idea and created a project with the following details:
+
+**Project Name:** ${project.name}
+**Description:** ${project.description}
+**Requirements:** ${project.requirements.join(', ')}
+**Tech Stack:** ${project.tech_stack.join(', ')}
+
+🚀 **Agent Execution Started!** Specialized agents are now working on:
+- Frontend Development (React/Next.js)
+- Backend API (Node.js/Python) 
+- Database Schema Design
+- DevOps Configuration
+
+You can view the progress and generated code in the Agents section.`,
+        sender: "agent",
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, successMessage]);
+      chatStorage.updateSession(currentSession.id, [...messages, successMessage]);
+      
+    } catch (error) {
+      console.error('Project creation error:', error);
     }
   };
 

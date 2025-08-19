@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, Menu } from "lucide-react";
 import { AgentSession, agentStorage } from "@/lib/agentStorage";
@@ -11,6 +11,7 @@ interface AgentSidebarProps {
   onNewSession: () => void;
   isOpen: boolean;
   onToggle: () => void;
+  sessions: AgentSession[];
 }
 
 export function AgentSidebar({
@@ -19,26 +20,9 @@ export function AgentSidebar({
   onNewSession,
   isOpen,
   onToggle,
+  sessions,
 }: AgentSidebarProps) {
-  const [sessions, setSessions] = useState<AgentSession[]>([]);
-
-  useEffect(() => {
-    const loadSessions = () => {
-      setSessions(agentStorage.getAllSessions());
-    };
-
-    loadSessions();
-
-    // Listen for storage updates
-    const handleStorageUpdate = () => {
-      loadSessions();
-    };
-
-    window.addEventListener('agent-storage-update', handleStorageUpdate);
-    return () => {
-      window.removeEventListener('agent-storage-update', handleStorageUpdate);
-    };
-  }, []);
+  // Sessions are now passed as props - no local state or useEffect needed
 
   const handleDeleteSession = (sessionId: string) => {
     agentStorage.deleteSession(sessionId);

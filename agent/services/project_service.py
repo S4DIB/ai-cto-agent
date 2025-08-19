@@ -2,36 +2,28 @@ from typing import Optional, List
 import uuid
 from datetime import datetime
 
-from ..models.project import Project, ProjectCreate, ProjectStatus
-from ..models.agent import Agent, AgentRole
-from .orchestrator_service import OrchestratorService
+# Fix relative imports to absolute imports
+from models.project import Project, ProjectCreate, ProjectStatus
+from models.agent import Agent, AgentRole, AgentStatus
+from models.deliverable import Deliverable
+from services.orchestrator_service import OrchestratorService
 
 class ProjectService:
     def __init__(self):
         self.projects = {}
         self.orchestrator = OrchestratorService()
 
-    async def create_project(self, project_create: ProjectCreate) -> Project:
-        project_id = str(uuid.uuid4())
-        project = Project(
-            id=project_id,
-            **project_create.dict(),
-            status=ProjectStatus.PLANNING,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        # The orchestrator now handles the entire planning phase
-        project = await self.orchestrator.plan_project(project)
-        
-        self.projects[project_id] = project
-        project.status = ProjectStatus.IN_PROGRESS
-        project.updated_at = datetime.now()
-        
+    async def create_project(self, project: Project) -> Project:
+        """Create a new project"""
+        self.projects[project.id] = project
         return project
 
     async def get_project(self, project_id: str) -> Optional[Project]:
         return self.projects.get(project_id)
+
+    async def get_all_projects(self) -> List[Project]:
+        """Get all projects"""
+        return list(self.projects.values())
 
     async def get_project_status(self, project_id: str) -> Optional[ProjectStatus]:
         project = await self.get_project(project_id)
@@ -43,6 +35,18 @@ class ProjectService:
             if agent.project_id == project_id
         ]
         return agents
+
+    async def get_project_deliverables(self, project_id: str) -> List[Deliverable]:
+        """Get all deliverables for a project"""
+        # This would typically come from a database
+        # For now, return empty list - will be populated by agents
+        return []
+
+    async def create_project_download(self, project_id: str) -> str:
+        """Create a downloadable package of all project deliverables"""
+        # This would create a zip file with all project files
+        # For now, return a placeholder URL
+        return f"/downloads/{project_id}.zip"
 
     async def cancel_project(self, project_id: str) -> bool:
         if project_id not in self.projects:

@@ -12,7 +12,6 @@ class TaskStatus(str, Enum):
 class Task(BaseModel):
     id: str
     project_id: str
-    agent_id: Optional[str] = None
     title: str
     description: str
     status: TaskStatus

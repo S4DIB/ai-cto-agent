@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("Chat API called");
     const { message, conversationHistory = [] } = await request.json();
 
     if (!message) {
@@ -11,7 +12,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY || "AIzaSyA5iDa-bcaeEx7Nnwin8C1PCA7NI6tig-8";
+    console.log("Gemini API key exists:", !!geminiApiKey);
+    console.log("Using API key:", geminiApiKey.substring(0, 10) + "...");
     
     if (!geminiApiKey) {
       return NextResponse.json(
@@ -67,6 +70,26 @@ Phase 5 – Exit or Long-Term Sustainability
 - Ensure knowledge transfer
 - Leave a future roadmap
 
+PROJECT CREATION TRIGGER:
+- When you have gathered enough information to create a project (after Phase 0 analysis), respond with:
+  "🎯 PROJECT READY TO CREATE! 
+  
+  Based on our conversation, I'm ready to create your project. Here's what I've gathered:
+  - Project Name: [Name]
+  - Description: [Description]
+  - Requirements: [List of requirements]
+  - Tech Stack: [Recommended tech stack]
+  
+  I'll now create your project and assign specialized agents to generate the actual code and deliverables. This will include:
+  - Frontend code (React/Next.js)
+  - Backend API (Node.js/Python)
+  - Database schema
+  - Deployment configuration
+  
+  Your project will be created and you can view all generated files in the Agents section."
+  
+- After this message, the system will automatically create the project in the backend.
+
 Execution Rules:
 - After each founder answer, respond with the next relevant question OR CTO task recommendation.
 - Break recommendations into actionable weekly tasks.
@@ -78,7 +101,7 @@ Execution Rules:
 Output Format (after context gathering):
 1. Current Startup Phase
 2. Key Goals
-3. This Week’s CTO Tasks
+3. This Week's CTO Tasks
 4. Suggested Tools & Resources
 5. Metrics to Track
 6. Risks & Mitigation
@@ -86,7 +109,8 @@ Output Format (after context gathering):
 Behavioral Requirements:
 - Always ask one question at a time until enough context is gathered.
 - Detect and handle GitHub repository links when provided; if present, prioritize a brief technical review (architecture, quality, scalability) before proceeding.
-- Use simple language, be encouraging but realistic, and keep responses concise and structured.`;
+- Use simple language, be encouraging but realistic, and keep responses concise and structured.
+- When ready to create project, use the PROJECT CREATION TRIGGER format above.`;
 
     // Build conversation context
     const conversationContext = conversationHistory.length > 0 
@@ -97,7 +121,8 @@ Behavioral Requirements:
     const fullPrompt = `${systemPrompt}${conversationContext}Founder: ${message}\n\nAI CTO:`;
 
     // Call Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+    console.log("Calling Gemini API...");
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -117,16 +142,16 @@ Behavioral Requirements:
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192, // Increased for proper code generation
         }
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API error:", errorData);
+      const errorText = await response.text();
+      console.error("Gemini API error:", response.status, errorText);
       return NextResponse.json(
-        { error: "Failed to get response from Gemini API" },
+        { error: `Gemini API error: ${response.status} - ${errorText}` },
         { status: response.status }
       );
     }
@@ -144,7 +169,20 @@ Behavioral Requirements:
       );
     }
 
-    return NextResponse.json({ response: aiResponse });
+    // Check if the response indicates project creation is ready
+    const isProjectReady = aiResponse.includes("🎯 PROJECT READY TO CREATE!");
+    
+    return NextResponse.json({ 
+      response: aiResponse,
+      isProjectReady,
+      // Extract project details if ready
+      projectDetails: isProjectReady ? {
+        name: extractProjectName(aiResponse),
+        description: extractProjectDescription(aiResponse),
+        requirements: extractRequirements(aiResponse),
+        techStack: extractTechStack(aiResponse)
+      } : null
+    });
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(
@@ -152,4 +190,33 @@ Behavioral Requirements:
       { status: 500 }
     );
   }
+}
+
+// Helper functions to extract project details from AI response
+function extractProjectName(response: string): string {
+  const match = response.match(/Project Name: (.+?)(?:\n|$)/);
+  return match ? match[1].trim() : "New Project";
+}
+
+function extractProjectDescription(response: string): string {
+  const match = response.match(/Description: (.+?)(?:\n|$)/);
+  return match ? match[1].trim() : "AI CTO Generated Project";
+}
+
+function extractRequirements(response: string): string[] {
+  const match = response.match(/Requirements: (.+?)(?:\n|$)/);
+  if (!match) return [];
+  
+  const requirementsText = match[1].trim();
+  // Split by commas, semicolons, or bullet points
+  return requirementsText.split(/[,;•]/).map(req => req.trim()).filter(req => req.length > 0);
+}
+
+function extractTechStack(response: string): string[] {
+  const match = response.match(/Tech Stack: (.+?)(?:\n|$)/);
+  if (!match) return [];
+  
+  const techText = match[1].trim();
+  // Split by commas, semicolons, or bullet points
+  return techText.split(/[,;•]/).map(tech => tech.trim()).filter(tech => tech.length > 0);
 } 
