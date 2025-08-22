@@ -25,6 +25,14 @@ class ProjectService:
         """Get all projects"""
         return list(self.projects.values())
 
+    async def update_project(self, project: Project) -> Project:
+        """Update an existing project"""
+        if project.id not in self.projects:
+            raise ValueError(f"Project {project.id} not found")
+        
+        self.projects[project.id] = project
+        return project
+
     async def get_project_status(self, project_id: str) -> Optional[ProjectStatus]:
         project = await self.get_project(project_id)
         return project.status if project else None

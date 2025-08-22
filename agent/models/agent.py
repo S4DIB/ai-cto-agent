@@ -49,3 +49,10 @@ class AgentCreate(BaseModel):
     project_id: str
     config: Optional[AgentConfig] = None
     parent_agent_id: Optional[str] = None
+
+class AgentUpdate(BaseModel):
+    status: Optional[AgentStatus] = None
+    assigned_task: Optional[str] = None
+    progress: Optional[float] = None
+    config: Optional[AgentConfig] = None
+    generated_code: Optional[Dict] = None

@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 
 # Fix relative imports to absolute imports
-from models.project import Project, ProjectCreate, ProjectStatus
+from models.project import Project, ProjectCreate, ProjectStatus, ProjectUpdate
 from models.agent import Agent, AgentRole
 from models.deliverable import Deliverable, DeliverableType, CodeFile
 from services.orchestrator_service import OrchestratorService
@@ -159,3 +159,22 @@ async def execute_project(project_id: str):
     except Exception as e:
         print(f"API: Exception during execution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Execution failed: {str(e)}")
+
+@router.patch("/{project_id}", response_model=Project)
+async def update_project(project_id: str, project_update: ProjectUpdate):
+    """Update a project with partial data"""
+    project = await project_service.get_project(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Update only the provided fields
+    update_data = project_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(project, field, value)
+    
+    project.updated_at = datetime.now()
+    
+    # Update the project in storage
+    await project_service.update_project(project)
+    
+    return project

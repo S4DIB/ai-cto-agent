@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 # Fix relative imports to absolute imports
-from models.agent import Agent, AgentStatus, AgentConfig
+from models.agent import Agent, AgentStatus, AgentConfig, AgentUpdate
 from services.orchestrator_service import OrchestratorService
 
 router = APIRouter()
@@ -52,3 +52,20 @@ async def update_progress(agent_id: str, progress: float):
         raise HTTPException(status_code=404, detail="Agent not found")
     
     return orchestrator.agents[agent_id]
+
+@router.patch("/{agent_id}", response_model=Agent)
+async def update_agent(agent_id: str, agent_update: AgentUpdate):
+    """Update an agent with partial data"""
+    agent = orchestrator.agents.get(agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    # Update only the provided fields
+    update_data = agent_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        if field == "progress" and (value < 0 or value > 100):
+            raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
+        setattr(agent, field, value)
+    
+    agent.updated_at = datetime.now()
+    return agent

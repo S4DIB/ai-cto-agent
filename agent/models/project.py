@@ -27,3 +27,10 @@ class ProjectCreate(BaseModel):
     description: str
     requirements: List[str]
     tech_stack: List[str]
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    requirements: Optional[List[str]] = None
+    tech_stack: Optional[List[str]] = None
+    status: Optional[ProjectStatus] = None
